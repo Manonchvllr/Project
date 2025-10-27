@@ -29,7 +29,24 @@ df.loc[df["OBS_VALUE_CORR"].notna(), "OBS_VALUE_CORR"] = df.loc[df["OBS_VALUE_CO
     lambda x: round(x["OBS_VALUE_CORR"], int(x["DECIMALS"])),
     axis=1
 )
+# on met le bon nombre de décimals 
 
-df = df.drop(columns=["DECIMALS","UNIT_MULT","OBS_VALUE"])
+df = df.drop(columns=["DECIMALS", "UNIT_MULT", "OBS_VALUE"])
+# on garde seulement la valeur observée qui est corrigée
+
+df = df.loc[df['TOUR_MEASURE'].isin(["ARR"])]
+# on choisit le nombre d'arrivée comme indicateur
+
+df = df.loc[df['OBS_STATUS'].isin(["A", "P"])]
+# on exclut les valeurs manquantes (O), A= Normale (définitive/validée), P= Valeur provisoire
+# en faisant: print(df["OBS_STATUS"].value_counts(dropna=False))
+# on obtient OBS_STATUS; A 69627; Name: count, dtype: int64
+# il n'y a donc pas de P, on va pouvoir supprimer la colonne OBS_STATUS
+
+df = df.drop(columns=["OBS_STATUS"])
+
+# on remarque que certaines valeurs définitives sont marquées Prov sous OBS_STATUS_FR
+# A = valeur correcte du point de vue technique,
+# mais OBS_STATUS_FR = "PROV" = pas encore consolidée statistiquement.
+
 print(df.head())
-
