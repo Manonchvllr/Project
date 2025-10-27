@@ -1,8 +1,35 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 
-df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';')
+colonnes_a_conserver = [
+    'FREQ', 
+    'GEO', 
+    'GEO_OBJECT',
+    'TERRTYPO',
+    'TOUR_MEASURE',
+    'TOUR_RESID',
+    'CONF_STATUS',
+    'DECIMALS',
+    'OBS_STATUS',
+    'OBS_STATUS_FR',
+    'UNIT_MULT',
+    'TIME_PERIOD',
+    'OBS_VALUE'
+]
+
+df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=colonnes_a_conserver)
+
+# on enlève les colonnes UNIT_LOC_RANKING (Classement de l’établissement touristique)
+# ACTIVITY (Catégorise le type d’hébergement touristique.) 
+# HOTEL_STA (Statut d’appartenance de l’établissement hôtelier.)
+
+df["OBS_VALUE_CORR"] = df["OBS_VALUE"] * (10 ** df["UNIT_MULT"])
+# on applique le facteur d'échelle 
+
+df.loc[df["OBS_VALUE_CORR"].notna(), "OBS_VALUE_CORR"] = df.loc[df["OBS_VALUE_CORR"].notna()].apply(
+    lambda x: round(x["OBS_VALUE_CORR"], int(x["DECIMALS"])),
+    axis=1
+)
+
+df = df.drop(columns=["DECIMALS","UNIT_MULT","OBS_VALUE"])
 print(df.head())
-
 
