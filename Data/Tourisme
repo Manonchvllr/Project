@@ -49,4 +49,20 @@ df = df.drop(columns=["OBS_STATUS"])
 # A = valeur correcte du point de vue technique,
 # mais OBS_STATUS_FR = "PROV" = pas encore consolidée statistiquement.
 
-print(df.head())
+# en faisant: print(df["CONF_STATUS"].value_counts(dropna=False))
+# on obtient CONF_STATUS; F 69627; Name: count, dtype: int64
+# il n'y a donc que des observations diffusables, on va pouvoir supprimer la colonne CONF_STATUS
+
+df = df.drop(columns=["CONF_STATUS"])
+
+# On définit les années que l'on veut garder
+annees_cibles = ["2011", "2021"]
+
+# On garde les lignes où TIME_PERIOD commence par 2011 ou 2021
+df = df[df["TIME_PERIOD"].astype(str).str.startswith(tuple(annees_cibles))]
+
+
+
+df = df.sort_values("TIME_PERIOD", ascending = False)
+
+print(df.head(20))
