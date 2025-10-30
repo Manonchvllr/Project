@@ -61,8 +61,74 @@ annees_cibles = ["2011", "2021"]
 # On garde les lignes où TIME_PERIOD commence par 2011 ou 2021
 df = df[df["TIME_PERIOD"].astype(str).str.startswith(tuple(annees_cibles))]
 
-
+df["TOUR_RESID"] = df["TOUR_RESID"].replace({
+    "1_X_250": "Étranger",
+    "250": "France",
+    "_T": "Total"
+})
 
 df = df.sort_values("TIME_PERIOD", ascending = False)
 
-print(df.head(20))
+# print(df.head(20))
+
+# print(df["FREQ"].value_counts(dropna=False))
+# print(df["GEO_OBJECT"].value_counts(dropna=False))
+# print(df["TIME_PERIOD"].value_counts(dropna=False))
+
+Ete=df.loc[df['TIME_PERIOD'].isin(["2021-06","2021-07","2021-08","2021-09","2011-06","2011-07","2011-08","2011-09"])].copy()
+Ete=Ete.loc[df['GEO_OBJECT'].isin(["DEP"])]
+Ete = Ete.drop(columns=["FREQ"])
+
+# on veut extraire l'année pour pouvoir sommer
+Ete["YEAR"] = Ete["TIME_PERIOD"].str[:4]
+
+# Sommer les arrivées d'été (juin→sept) par département
+Ete_somme = (
+    Ete.groupby(["GEO","YEAR"], as_index=False)["OBS_VALUE_CORR"]
+    .sum()
+    .rename(columns={"GEO": "CODE_DEP","OBS_VALUE_CORR": "ARRIVEES_ETE"})
+)
+
+# on veut 2021 et 2011 en titre de colonne
+Ete_somme = (
+    Ete_somme.pivot(index="CODE_DEP", columns="YEAR", values="ARRIVEES_ETE")
+    .reset_index()
+    .rename_axis(None, axis=1)  # retire le nom 'YEAR' sur l’axe des colonnes
+)
+
+# on veut les variations
+Ete_somme["VARIATION %"] = (Ete_somme["2021"] - Ete_somme["2011"])/Ete_somme["2011"] * 100
+
+# on veut faire une ligne montrant les variations totales
+Total_2011 = Ete_somme["2011"].sum()
+Total_2021 = Ete_somme["2021"].sum()
+Variation_Totale = (Total_2021 - Total_2011) / Total_2011 * 100
+
+# on crée la ligne
+ligne_Somme = pd.DataFrame({
+    "CODE_DEP": ["Somme"],
+    "2011": [Total_2011],
+    "2021": [Total_2021],
+    "VARIATION %": [Variation_Totale]
+})
+
+# On ajoute la ligne à la fin du tableau 
+Ete_somme= pd.concat([Ete_somme, ligne_Somme], ignore_index=True)
+
+# Remplacer les NaN par 0
+Ete_somme = Ete_somme.fillna(0)
+
+# corriger les taux de croissance quand les valeurs sont 0
+Ete_somme.loc[(Ete_somme["2011"] == 0) & (Ete_somme["2021"] > 0), "VARIATION %"] = 100.0
+Ete_somme.loc[(Ete_somme["2011"] == 0) & (Ete_somme["2021"] == 0), "VARIATION %"] = 0.0
+Ete_somme.loc[(Ete_somme["2011"] > 0) & (Ete_somme["2021"] == 0), "VARIATION %"] = -100.0
+
+print(Ete_somme.tail(15))
+
+print(Ete.head(20))
+# print(Ete["TIME_PERIOD"].value_counts(dropna=False))
+# print(Ete["GEO_OBJECT"].value_counts(dropna=False))
+# print(Ete["TOUR_RESID"].value_counts(dropna=False))
+
+Ete_somme.to_csv("Ete_somme.csv", sep=";", index=False, encoding="utf-8")
+print("Fichier enregistré : Ete_somme.csv")
