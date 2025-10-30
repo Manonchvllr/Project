@@ -78,6 +78,7 @@ df = df.sort_values("TIME_PERIOD", ascending = False)
 Ete=df.loc[df['TIME_PERIOD'].isin(["2021-06","2021-07","2021-08","2021-09","2011-06","2011-07","2011-08","2011-09"])].copy()
 Ete=Ete.loc[df['GEO_OBJECT'].isin(["DEP"])]
 Ete = Ete.drop(columns=["FREQ"])
+Ete = Ete.loc[df['TOUR_RESID'].isin(["Étranger","France"])] # on enlève total car total = Etrangers + Français
 
 # on veut extraire l'année pour pouvoir sommer
 Ete["YEAR"] = Ete["TIME_PERIOD"].str[:4]
@@ -176,7 +177,7 @@ print(Ete.head(20))
 # print(Ete["GEO_OBJECT"].value_counts(dropna=False))
 # print(Ete["TOUR_RESID"].value_counts(dropna=False))
 
-#Ete_somme.to_csv("Ete_somme.csv", sep=",", index=False, encoding="utf-8")
-#Ete.to_csv("Ete.csv", sep=",", index=False, encoding="utf-8")
-Ete.to_csv("Ete3.csv", sep=";", index=False, encoding="utf-8")
-print("Fichier enregistré : Ete3.csv")
+# Ete_somme.to_csv("Ete_somme.csv", sep=",", index=False, encoding="utf-8")
+# Ete.to_csv("Ete.csv", sep=",", index=False, encoding="utf-8")
+Ete.to_csv("Ete_excel.csv", sep=";", index=False, encoding="utf-8")
+print("Fichier enregistré : Ete_excel")
