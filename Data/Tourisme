@@ -130,5 +130,5 @@ print(Ete.head(20))
 # print(Ete["GEO_OBJECT"].value_counts(dropna=False))
 # print(Ete["TOUR_RESID"].value_counts(dropna=False))
 
-Ete_somme.to_csv("Ete_somme.csv", sep=";", index=False, encoding="utf-8")
+Ete_somme.to_csv("Ete_somme.csv", sep=",", index=False, encoding="utf-8")
 print("Fichier enregistré : Ete_somme.csv")
