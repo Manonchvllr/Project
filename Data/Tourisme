@@ -73,10 +73,10 @@ df = df.sort_values("TIME_PERIOD", ascending = False)
 
 # print(df["FREQ"].value_counts(dropna=False))
 # print(df["GEO_OBJECT"].value_counts(dropna=False))
-# print(df["TIME_PERIOD"].value_counts(dropna=False))
+print(df["TIME_PERIOD"].value_counts(dropna=False))
 
-Ete=df.loc[df['TIME_PERIOD'].isin(["2021-06","2021-07","2021-08","2021-09","2011-06","2011-07","2011-08","2011-09"])].copy()
-Ete=Ete.loc[df['GEO_OBJECT'].isin(["DEP"])]
+Ete = df.loc[df['TIME_PERIOD'].isin(["2021-06","2021-07","2021-08","2021-09","2011-06","2011-07","2011-08","2011-09"])].copy()
+Ete = Ete.loc[df['GEO_OBJECT'].isin(["DEP"])]
 Ete = Ete.drop(columns=["FREQ"])
 Ete = Ete.loc[df['TOUR_RESID'].isin(["Étranger","France"])] # on enlève total car total = Etrangers + Français
 
@@ -151,7 +151,7 @@ ligne_Somme = pd.DataFrame({
 })
 
 # On ajoute la ligne à la fin du tableau 
-Ete_somme= pd.concat([Ete_somme, ligne_Somme], ignore_index=True)
+Ete_somme = pd.concat([Ete_somme, ligne_Somme], ignore_index=True)
 
 # Remplacer les NaN par 0
 Ete_somme = Ete_somme.fillna(0)
@@ -170,14 +170,119 @@ Ete_somme["NOM_DEP"] = Ete_somme["CODE_DEP"].map(departement_noms)
 # On réorganise les colonnes
 Ete_somme = Ete_somme[["NOM_DEP", "CODE_DEP", "2011", "2021", "VARIATION %"]]
 
-print(Ete_somme.tail(15))
+#"print(Ete_somme.tail(15))
 
-print(Ete.head(20))
+#"print(Ete.head(20))
 # print(Ete["TIME_PERIOD"].value_counts(dropna=False))
 # print(Ete["GEO_OBJECT"].value_counts(dropna=False))
 # print(Ete["TOUR_RESID"].value_counts(dropna=False))
 
 # Ete_somme.to_csv("Ete_somme.csv", sep=",", index=False, encoding="utf-8")
 # Ete.to_csv("Ete.csv", sep=",", index=False, encoding="utf-8")
-Ete.to_csv("Ete_excel.csv", sep=";", index=False, encoding="utf-8")
-print("Fichier enregistré : Ete_excel")
+#"Ete.to_csv("Ete_excel.csv", sep=";", index=False, encoding="utf-8")
+# print("Fichier enregistré : Ete_excel")
+
+Hiver = df.loc[df['TIME_PERIOD'].isin(["2021-12","2011-12"])].copy()
+# on ne prend que 2 mois par manque de données hiver 2021 (Janvier, Février, Mars)
+Hiver = Hiver.loc[df['GEO_OBJECT'].isin(["DEP"])]
+Hiver = Hiver.drop(columns=["FREQ"])
+Hiver = Hiver.loc[df['TOUR_RESID'].isin(["Étranger","France"])] # on enlève total car total = Etrangers + Français
+
+# on veut extraire l'année pour pouvoir sommer
+Hiver["YEAR"] = Hiver["TIME_PERIOD"].str[:4]
+
+departement_noms = {
+    "01": "Ain", "02": "Aisne", "03": "Allier", "04": "Alpes-de-Haute-Provence",
+    "05": "Hautes-Alpes", "06": "Alpes-Maritimes", "07": "Ardèche", "08": "Ardennes",
+    "09": "Ariège", "10": "Aube", "11": "Aude", "12": "Aveyron", "13": "Bouches-du-Rhône",
+    "14": "Calvados", "15": "Cantal", "16": "Charente", "17": "Charente-Maritime",
+    "18": "Cher", "19": "Corrèze", "21": "Côte-d'Or", "22": "Côtes-d'Armor",
+    "23": "Creuse", "24": "Dordogne", "25": "Doubs", "26": "Drôme", "27": "Eure",
+    "28": "Eure-et-Loir", "29": "Finistère", "2A": "Corse-du-Sud", "2B": "Haute-Corse",
+    "30": "Gard", "31": "Haute-Garonne", "32": "Gers", "33": "Gironde", "34": "Hérault",
+    "35": "Ille-et-Vilaine", "36": "Indre", "37": "Indre-et-Loire", "38": "Isère",
+    "39": "Jura", "40": "Landes", "41": "Loir-et-Cher", "42": "Loire", "43": "Haute-Loire",
+    "44": "Loire-Atlantique", "45": "Loiret", "46": "Lot", "47": "Lot-et-Garonne",
+    "48": "Lozère", "49": "Maine-et-Loire", "50": "Manche", "51": "Marne",
+    "52": "Haute-Marne", "53": "Mayenne", "54": "Meurthe-et-Moselle", "55": "Meuse",
+    "56": "Morbihan", "57": "Moselle", "58": "Nièvre", "59": "Nord", "60": "Oise",
+    "61": "Orne", "62": "Pas-de-Calais", "63": "Puy-de-Dôme", "64": "Pyrénées-Atlantiques",
+    "65": "Hautes-Pyrénées", "66": "Pyrénées-Orientales", "67": "Bas-Rhin",
+    "68": "Haut-Rhin", "69": "Rhône", "70": "Haute-Saône", "71": "Saône-et-Loire",
+    "72": "Sarthe", "73": "Savoie", "74": "Haute-Savoie", "75": "Paris",
+    "76": "Seine-Maritime", "77": "Seine-et-Marne", "78": "Yvelines", "79": "Deux-Sèvres",
+    "80": "Somme", "81": "Tarn", "82": "Tarn-et-Garonne", "83": "Var", "84": "Vaucluse",
+    "85": "Vendée", "86": "Vienne", "87": "Haute-Vienne", "88": "Vosges", "89": "Yonne",
+    "90": "Territoire de Belfort", "91": "Essonne", "92": "Hauts-de-Seine",
+    "93": "Seine-Saint-Denis", "94": "Val-de-Marne", "95": "Val-d'Oise",
+    "971": "Guadeloupe", "972": "Martinique", "973": "Guyane", "974": "La Réunion",
+    "976": "Mayotte"
+}
+
+# on s'assure que le code est bien une chaîne (pour conserver 01 etc.)
+Hiver["GEO"] = Hiver["GEO"].astype(str)
+
+# On ajoute le nom du département 
+Hiver["NOM_DEP"] = Hiver["GEO"].map(departement_noms)
+
+# On réorganise les colonnes
+Hiver = Hiver[["NOM_DEP", "GEO", "GEO_OBJECT", "TERRTYPO", "TOUR_MEASURE", "TOUR_RESID", "OBS_STATUS_FR", "TIME_PERIOD", "OBS_VALUE_CORR", "YEAR"]]
+
+# Sommer les arrivées d'été (juin→sept) par département
+Hiver_somme = (
+    Hiver.groupby(["GEO","YEAR"], as_index=False)["OBS_VALUE_CORR"]
+    .sum()
+    .rename(columns={"GEO": "CODE_DEP","OBS_VALUE_CORR": "ARRIVEES_HIVER"})
+)
+
+# on veut 2021 et 2011 en titre de colonne
+Hiver_somme = (
+    Hiver_somme.pivot(index="CODE_DEP", columns="YEAR", values="ARRIVEES_HIVER")
+    .reset_index()
+    .rename_axis(None, axis=1)  # retire le nom 'YEAR' sur l’axe des colonnes
+)
+
+# on veut les variations
+Hiver_somme["VARIATION %"] = (Hiver_somme["2021"] - Hiver_somme["2011"])/Hiver_somme["2011"] * 100
+
+# on veut faire une ligne montrant les variations totales
+TOTAL_2011 = Hiver_somme["2011"].sum()
+TOTAL_2021 = Hiver_somme["2021"].sum()
+Variation_TOTALE = (TOTAL_2021 - TOTAL_2011) / TOTAL_2011 * 100
+
+# on crée la ligne
+lIGNE_Somme2 = pd.DataFrame({
+    "CODE_DEP": ["Somme"],
+    "2011": [TOTAL_2011],
+    "2021": [TOTAL_2021],
+    "VARIATION %": [Variation_TOTALE]
+})
+
+# On ajoute la ligne à la fin du tableau 
+Hiver_somme = pd.concat([Hiver_somme, lIGNE_Somme2], ignore_index=True)
+
+# Remplacer les NaN par 0
+Hiver_somme = Hiver_somme.fillna(0)
+
+# corriger les taux de croissance quand les valeurs sont 0
+Hiver_somme.loc[(Hiver_somme["2011"] == 0) & (Hiver_somme["2021"] > 0), "VARIATION %"] = 100.0
+Hiver_somme.loc[(Hiver_somme["2011"] == 0) & (Hiver_somme["2021"] == 0), "VARIATION %"] = 0.0
+Hiver_somme.loc[(Hiver_somme["2011"] > 0) & (Hiver_somme["2021"] == 0), "VARIATION %"] = -100.0
+
+# on s'assure que le code est bien une chaîne (pour conserver 01 etc.)
+Hiver_somme["CODE_DEP"] = Hiver_somme["CODE_DEP"].astype(str)
+
+# On ajoute le nom du département 
+Hiver_somme["NOM_DEP"] = Hiver_somme["CODE_DEP"].map(departement_noms)
+
+# On réorganise les colonnes
+Hiver_somme = Hiver_somme[["NOM_DEP", "CODE_DEP", "2011", "2021", "VARIATION %"]]
+
+print(Hiver_somme.tail(15))
+
+print(Hiver.head(20))
+
+Hiver_somme.to_csv("Hiver_somme.csv", sep=",", index=False, encoding="utf-8")
+Hiver.to_csv("Hiver.csv", sep=",", index=False, encoding="utf-8")
+Hiver.to_csv("Hiver_excel.csv", sep=";", index=False, encoding="utf-8")
+print("Fichiers enregistrés : Hiver_somme, Hiver et Hiver_excel")
