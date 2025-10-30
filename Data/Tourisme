@@ -178,5 +178,5 @@ print(Ete.head(20))
 
 #Ete_somme.to_csv("Ete_somme.csv", sep=",", index=False, encoding="utf-8")
 #Ete.to_csv("Ete.csv", sep=",", index=False, encoding="utf-8")
-Ete.to_csv("Ete2.csv", sep=",", index=False, encoding="utf-8")
+Ete.to_csv("Ete2.csv", sep=";", index=False, encoding="utf-8")
 print("Fichier enregistré : Ete.csv")
