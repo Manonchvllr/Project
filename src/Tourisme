@@ -16,7 +16,7 @@ colonnes_a_conserver = [
     'OBS_VALUE'
 ]
 
-df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=colonnes_a_conserver)
+df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=colonnes_a_conserver, storage_options=)
 
 # on enlève les colonnes UNIT_LOC_RANKING (Classement de l’établissement touristique)
 # ACTIVITY (Catégorise le type d’hébergement touristique.) 
