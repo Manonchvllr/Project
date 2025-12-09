@@ -10,8 +10,8 @@ def repartition_arrivees(data, annees, mois, par_groupe):
 
 
 # évolution avant et après 2015
-def evol_arrivees(data, saison):
-    data = pandas.DataFrame(data.loc[data['saison'].isin(saison)].groupby(["DEP", "periode"])["OBS_VALUE_CORR"].sum())
+def evol_arrivees(data, mois):
+    data = pandas.DataFrame(data.loc[data['MM'].isin(mois)].groupby(["DEP", "periode"])["OBS_VALUE_CORR"].sum())
     data = data.reset_index()
     data = data.pivot(index="DEP", columns="periode", values="OBS_VALUE_CORR")
     data = data.reset_index(names=["DEP"])
