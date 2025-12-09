@@ -3,6 +3,9 @@ from cartiflette import carti_download
 import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 
+def remove_leading_zeros(num):
+    return num.lstrip('0')
+
 def carte(data, indicateur, titre_axe, titre_carte):
 # Charger les départements français depuis une source publique
     france = carti_download(
@@ -16,6 +19,7 @@ def carte(data, indicateur, titre_axe, titre_carte):
         year=2022)
     data["DEP"] = data.DEP.astype(str)
     france["INSEE_DEP"] = france.INSEE_DEP.astype(str)
+    france["INSEE_DEP"] = france["INSEE_DEP"].str.lstrip('0').fillna(value='0')
     carte = france.merge(data, left_on="INSEE_DEP", right_on="DEP", how="inner")
     # Afficher la carte avec les noms des départements
     # Normalisation centrée sur zéro
