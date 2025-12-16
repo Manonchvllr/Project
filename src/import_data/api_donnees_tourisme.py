@@ -19,9 +19,23 @@ cols = [
     'OBS_VALUE'
 ]
 
+import os
+import s3fs
+os.environ["AWS_ACCESS_KEY_ID"] = 'USJHGHP393O2D500IZ5A'
+os.environ["AWS_SECRET_ACCESS_KEY"] = 'QmI8KqTNYkNqnnxyUxCvwlbszEJSji1jtQ4HkgoA'
+os.environ["AWS_SESSION_TOKEN"] = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NLZXkiOiJVU0pIR0hQMzkzTzJENTAwSVo1QSIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sImF1ZCI6WyJtaW5pby1kYXRhbm9kZSIsIm9ueXhpYSIsImFjY291bnQiXSwiYXV0aF90aW1lIjoxNzY1ODg0MDA3LCJhenAiOiJvbnl4aWEiLCJlbWFpbCI6Im1hbm9uX2NoZXZhbGxpZXJAZW5zYWUuZnIiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZXhwIjoxNzY2NDkzNzU4LCJmYW1pbHlfbmFtZSI6IkNoZXZhbGxpZXIiLCJnaXZlbl9uYW1lIjoiTWFub24iLCJncm91cHMiOlsiVVNFUl9PTllYSUEiXSwiaWF0IjoxNzY1ODg4OTU4LCJpc3MiOiJodHRwczovL2F1dGgubGFiLnNzcGNsb3VkLmZyL2F1dGgvcmVhbG1zL3NzcGNsb3VkIiwianRpIjoib25ydHJ0OjdjZTYyMmE5LTQ0ZGUtNDU0NC05NDhkLTZlNDk5Y2E2ZjM2YSIsImxvY2FsZSI6ImZyIiwibmFtZSI6Ik1hbm9uIENoZXZhbGxpZXIiLCJwb2xpY3kiOiJzdHNvbmx5IiwicHJlZmVycmVkX3VzZXJuYW1lIjoibWFjaGV2YWxsaWVyIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iLCJkZWZhdWx0LXJvbGVzLXNzcGNsb3VkIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtc3NwY2xvdWQiXSwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBncm91cHMgZW1haWwiLCJzaWQiOiIwNjhkMmUwNS02MTA5LWViODMtNjM4My02YWYxZTA3NmZhMWIiLCJzdWIiOiJmMGQxN2VkNC01OTJmLTQyMzAtYjI5YS00MjMxZjQ4ZDc1MzMiLCJ0eXAiOiJCZWFyZXIifQ.96BQIQHOyfzykDva4dvciDFvLIHwdfHMX3OS0Fw5JDwtCF0c7J_AWybFnbG26YBaeZk2t_is6Oaa0pMCOTxCyQ'
+os.environ["AWS_DEFAULT_REGION"] = 'us-east-1'
+fs = s3fs.S3FileSystem(
+    client_kwargs={'endpoint_url': 'https://'+'minio.lab.sspcloud.fr'},
+    key = os.environ["AWS_ACCESS_KEY_ID"], 
+    secret = os.environ["AWS_SECRET_ACCESS_KEY"], 
+    token = os.environ["AWS_SESSION_TOKEN"])
+
+
 df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=cols)
 
-#df = recup_url.url_to_df(url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5",
+
+#df = recup_url.url_to_df(url = "https://www.data.gouv.fr/datasets/frequentation-des-hebergements-touristiques/#/resources/1129fd80-2564-452c-86d4-9e36e7cca4a5",
                          #cols_a_conserver=cols,
                          #type_zip="zip",
                          #plusieurs_fichiers=True)
@@ -53,11 +67,13 @@ df.loc[df["OBS_VALUE_CORR"].notna(), "OBS_VALUE_CORR"] = df.loc[df["OBS_VALUE_CO
 df = df.drop(columns=["DECIMALS", "UNIT_MULT", "OBS_VALUE"])
 
 # on choisit le nombre d'arrivée comme indicateur
-df = df.loc[df['TOUR_MEASURE'].isin(["ARR"])]
+df = df.loc[df['TOUR_MEASURE'].isin(["NUI"])]
 
-#df['ACTIVITY'] = df['ACTIVITY'].replace(['I553'],['CAMPING'])
 
-#df = df[df["ACTIVITY"] == "CAMPING"]
+
+df['ACTIVITY'] = df['ACTIVITY'].replace(['I553','I551'],['CAMPING', 'HOTEL'])
+
+df = df[df["ACTIVITY"] == "CAMPING"]
 
 df = df.loc[df['OBS_STATUS'].isin(["A", "P"])]
 # on exclut les valeurs manquantes (O), A= Normale (définitive/validée), P= Valeur provisoire
@@ -65,6 +81,7 @@ df = df.loc[df['OBS_STATUS'].isin(["A", "P"])]
 # on obtient OBS_STATUS; A 69627; Name: count, dtype: int64
 # il n'y a donc pas de P, on va pouvoir supprimer la colonne OBS_STATUS
 df = df.drop(columns=["OBS_STATUS"])
+
 
 # on remarque que certaines valeurs définitives sont marquées Prov sous OBS_STATUS_FR
 # A = valeur correcte du point de vue technique,
@@ -142,8 +159,10 @@ df['DEP'] = df['DEP'].replace(['2A', '2B'],['20', '20'])
 # la variable "TOUR_RESID" donne l'origine du touriste : on filtre sur total (on ne distingue pas pour l'instant)
 df = df.loc[df['TOUR_RESID'].isin(["_T"])]
 
-# print(df["ACTIVITY"].value_counts(dropna=False))
+print(df["ACTIVITY"].value_counts(dropna=False))
 # Aucun camping n'est présent dans notre sélection
+
+print(df.head(20))
 
 # on somme les arrivées par année et mois
 df = df.groupby(['AAAA','MM', 'DEP'])["OBS_VALUE_CORR"].sum()
