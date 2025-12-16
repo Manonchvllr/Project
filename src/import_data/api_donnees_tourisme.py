@@ -91,18 +91,18 @@ df = df.drop(columns=["OBS_STATUS"])
 # il n'y a donc que des observations diffusables, on va pouvoir supprimer la colonne CONF_STATUS
 df = df.drop(columns=["CONF_STATUS","TOUR_MEASURE","OBS_STATUS_FR"])
 
-# On prend les données mensuelles et on supprime la colonne FREQ
-df = df.loc[df['FREQ'].isin(["M"])]
+# On ne peut pas prendre les données mensuelles pour camping et on supprime la colonne FREQ
+df = df.loc[df['FREQ'].isin(["A"])]
 df = df.drop("FREQ", axis = 1)
 
 # On définit les années que l'on veut garder
 # on crée une variable ne contenant que l'annee et une autre le mois
 df['AAAA'] = df['TIME_PERIOD'].astype(str).str[:4].astype(int)
-df['MM']= df['TIME_PERIOD'].astype(str).str[5:7].astype(int)
+#df['MM']= df['TIME_PERIOD'].astype(str).str[5:7].astype(int)
 df = df.drop("TIME_PERIOD", axis = 1)
 
 #on filtre les données sur nos mois d'interet
-df = filtre_data.filtre_annee_mois(df)
+#df = filtre_data.filtre_annee_mois(df)
 
 # On prend les données de departement et on supprime c
 df = df.loc[df['GEO_OBJECT'].isin(["DEP"])]
@@ -165,7 +165,7 @@ print(df["ACTIVITY"].value_counts(dropna=False))
 print(df.head(20))
 
 # on somme les arrivées par année et mois
-df = df.groupby(['AAAA','MM', 'DEP'])["OBS_VALUE_CORR"].sum()
+df = df.groupby(['AAAA', 'DEP'])["OBS_VALUE_CORR"].sum()
 
 # on remet année et mois (devenues index) en variables normales
 df = df.reset_index() 
