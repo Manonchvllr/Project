@@ -153,5 +153,16 @@ df = df.reset_index()
 
 base_touri = df
 
-# A CHANGER 
-#base_touri.to_csv("~/Project/Data/data_tourisme.csv")
+# On veut mettre notre nouvelle base de données dans Data 
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+data_dir = PROJECT_ROOT / "Data"
+data_dir.mkdir(exist_ok=True)
+
+output_path = data_dir / "data_tourisme.csv"
+base_touri.to_csv(output_path, index=False)
+
+print("Fichier tourisme sauvegardé dans :", output_path)
+
+

@@ -78,5 +78,17 @@ df['periode'] = np.select(conditions2, values2, default='Other')
 base_temp = df
 base_temp.head()
 
-# A CHANGER 
-base_temp.to_csv("~/Project/Data/data_climat.csv")
+
+# On veut ajouter la nouvelle base de données, que l'on vient de créer dans dossier Data
+from pathlib import Path
+
+# dossier racine du projet = 3 niveaux au-dessus de ce fichier
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+data_dir = PROJECT_ROOT / "Data"
+data_dir.mkdir(exist_ok=True)
+
+output_path = data_dir / "data_climat.csv"
+base_temp.to_csv(output_path, index=False)
+
+print("Fichier climat sauvegardé dans :", output_path)
