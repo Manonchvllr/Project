@@ -2,12 +2,26 @@ from package_project import indicateurs_climat
 import geopandas as gpd
 from cartiflette import carti_download
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm
+import matplotlib as mcolors
+from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
+
+# Define your custom color palette
+col_palette_mixte = [
+   '#154D71', # last color
+   '#FFF0C4',
+   '#8C1007'  # first color
+]
+
+# Create a ListedColormap
+custom_cmap_mixte = LinearSegmentedColormap.from_list("custom_gradient", col_palette_mixte)
+
+# fonctions
+def hex_to_rgb_norm(hex_color):
+    hex_color = hex_color.lstrip("#")
+    return tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
 
 def remove_leading_zeros(num):
     return num.lstrip('0')
-
-
 
 def donnee_carte(data):
 # Charger les départements français depuis une source publique
@@ -28,11 +42,11 @@ def donnee_carte(data):
 
 
 
-def mise_en_forme_carte(data, annees, mois, indicateur, titre_carte, plotting, evolution):
+def mise_en_forme_carte(carte_prete, annees, mois, indicateur, titre_carte, plotting, evolution):
 
     if evolution == False:
         titre_axe="Nombre de jours"
-        carte=donnee_carte(indicateurs_climat.nbj_par_an(data, annees, mois, indicateur))
+        carte=carte_prete
 
         indic=indicateur
     elif evolution == True:
@@ -42,18 +56,18 @@ def mise_en_forme_carte(data, annees, mois, indicateur, titre_carte, plotting, e
         elif all(item in [1,2,3,12] for item in mois):
             saison= ['hiver']
         indic= "evol_2015"
-        carte=donnee_carte(indicateurs_climat.nbj_evol_2015(data, saison, indicateur))
-        cols="bwr"          # bleu blanc rouge
+        carte=carte_prete
+        cols=custom_cmap_mixte         # bleu blanc rouge
 
     if carte[indic].min() < 0:
         center = 0
-        cols="bwr"
+        cols=custom_cmap_mixte
     else:
         center = (carte[indic].max() - carte[indic].min())/2
         if all(item in [6,7,8,9] for item in mois):
-            cols='OrRd'         #  rouge
+            cols='OrRd'      #  rouge
         elif all(item in [1,2,3,12] for item in mois):
-            cols='Blues'
+            cols='Purples'
 
     norme = TwoSlopeNorm(vmin=carte[indic].min(),
             vmax=carte[indic].max(),

@@ -14,7 +14,7 @@ def nbj_par_an(data, annees, mois, var_climat):
 
 #  nombre moyen de jours au dessus/ en dessous d'une certaine température par année
 def nbj_evol_2015(data, saison, var_climat):
-    data = pandas.DataFrame(data.loc[data['saison'].isin(saison)].groupby(["DEP","periode"])[var_climat].mean())
+    data = pandas.DataFrame(data.loc[data['saison'].isin([saison])].groupby(["DEP","periode"])[var_climat].mean())
     data = data.reset_index()
     data = data.pivot(index="DEP", columns="periode", values=var_climat)
     data = data.reset_index(names=["DEP"])
