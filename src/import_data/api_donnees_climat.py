@@ -55,8 +55,17 @@ for i in liste_dep:
 # on remet année et mois (devenues index) en variables normales
 df = df.reset_index() 
 
-# on crée deux departements différents pour la Corse pour pouvoir cartographier ensuite
+df["DEP"] = df.DEP.astype(str)
+df["DEP"] = df["DEP"].str.zfill(2)
 
+
+# on crée deux departements différents pour la Corse pour pouvoir cartographier ensuite
+new_rows = df.loc[df['DEP']=="20"].copy()
+new_rows1 = new_rows.copy()
+new_rows["DEP"] = "2A"
+new_rows1["DEP"] = "2B"
+df = df._append([new_rows,new_rows1])
+df = df.loc[df["DEP"] != "20"]
 
 # saison (été ou hiver)
 conditions1 = [

@@ -117,14 +117,11 @@ df.insert(
 
 #changer le nom de la colonne GEO en DEP pour la fusion
 col = df.columns.tolist()
-col[2] = "DEP"
+col[0] = "DEP"
 df.columns = col
 
 # on exclut les DOM TOM
 df = df.loc[df['DEP'].str.len() == 2]
-
-# la corse est codée 20 dans l'autre fichier, on modifie
-df['DEP'] = df['DEP'].replace(['2A', '2B'],['20', '20'])
 
 # la variable "TOUR_RESID" donne l'origine du touriste : on filtre sur total (on ne distingue pas pour l'instant)
 df = df.loc[df['TOUR_RESID'].isin(["_T"])]
