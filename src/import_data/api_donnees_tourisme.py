@@ -19,26 +19,13 @@ cols = [
     'OBS_VALUE'
 ]
 
-df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=cols)
 
-#df = recup_url.url_to_df(url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5",
-                         #cols_a_conserver=cols,
-                         #type_zip="zip",
-                         #plusieurs_fichiers=True)
+#df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=cols)
 
-# url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5"
-# dossier = requests.get(url)
-
-# # Ouvrir le contenu ZIP en mémoire
-# z = zipfile.ZipFile(io.BytesIO(dossier.content))
-
-# # Extraire tous les fichiers
-# z.extractall("donnees_zip")
-
-
-# fichiers = [f for f in os.listdir("donnees_zip") if f.endswith(".csv")]
-# df = pd.read_csv(os.path.join("donnees_zip", fichiers[1]), sep = ';', usecols=colonnes_a_conserver)
-
+df = recup_url.url_to_df(url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5",
+                          cols_a_conserver=cols,
+                          type_zip="zip",
+                          plusieurs_fichiers=True)
 
 # on applique le facteur d'échelle 
 df["OBS_VALUE_CORR"] = df["OBS_VALUE"] * (10 ** df["UNIT_MULT"])
