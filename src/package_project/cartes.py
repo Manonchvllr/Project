@@ -34,9 +34,8 @@ def donnee_carte(data):
         filter_by="FRANCE_ENTIERE",
         source="EXPRESS-COG-CARTO-TERRITOIRE",
         year=2022)
-    data["DEP"] = data.DEP.astype(str)
     france["INSEE_DEP"] = france.INSEE_DEP.astype(str)
-    france["INSEE_DEP"] = france["INSEE_DEP"].str.lstrip('0').fillna(value='0')
+    #france["INSEE_DEP"] = france["INSEE_DEP"].str.lstrip('0').fillna(value='0')
     carte = france.merge(data, left_on="INSEE_DEP", right_on="DEP", how="inner")
     return(carte)
 

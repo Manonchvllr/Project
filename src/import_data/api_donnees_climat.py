@@ -55,8 +55,17 @@ for i in liste_dep:
 # on remet année et mois (devenues index) en variables normales
 df = df.reset_index() 
 
-# on crée deux departements différents pour la Corse pour pouvoir cartographier ensuite
+df["DEP"] = df.DEP.astype(str)
+df["DEP"] = df["DEP"].str.zfill(2)
 
+
+# on crée deux departements différents pour la Corse pour pouvoir cartographier ensuite
+new_rows = df.loc[df['DEP']=="20"].copy()
+new_rows1 = new_rows.copy()
+new_rows["DEP"] = "2A"
+new_rows1["DEP"] = "2B"
+df = df._append([new_rows,new_rows1])
+df = df.loc[df["DEP"] != "20"]
 
 # saison (été ou hiver)
 conditions1 = [
@@ -81,5 +90,17 @@ df['periode'] = np.select(conditions2, values2, default='Other')
 base_temp = df
 base_temp.head()
 
-# A CHANGER 
-base_temp.to_csv("~/Project/Data/data_climat.csv")
+
+# On veut ajouter la nouvelle base de données, que l'on vient de créer dans dossier Data
+from pathlib import Path
+
+# dossier racine du projet = 3 niveaux au-dessus de ce fichier
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+data_dir = PROJECT_ROOT / "Data"
+data_dir.mkdir(exist_ok=True)
+
+output_path = data_dir / "data_climat.csv"
+base_temp.to_csv(output_path, index=False)
+
+print("Fichier climat sauvegardé dans :", output_path)

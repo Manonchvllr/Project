@@ -19,26 +19,13 @@ cols = [
     'OBS_VALUE'
 ]
 
-df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=cols)
 
-#df = recup_url.url_to_df(url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5",
-                         #cols_a_conserver=cols,
-                         #type_zip="zip",
-                         #plusieurs_fichiers=True)
+#df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=cols)
 
-# url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5"
-# dossier = requests.get(url)
-
-# # Ouvrir le contenu ZIP en mémoire
-# z = zipfile.ZipFile(io.BytesIO(dossier.content))
-
-# # Extraire tous les fichiers
-# z.extractall("donnees_zip")
-
-
-# fichiers = [f for f in os.listdir("donnees_zip") if f.endswith(".csv")]
-# df = pd.read_csv(os.path.join("donnees_zip", fichiers[1]), sep = ';', usecols=colonnes_a_conserver)
-
+df = recup_url.url_to_df(url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5",
+                          cols_a_conserver=cols,
+                          type_zip="zip",
+                          plusieurs_fichiers=True)
 
 # on applique le facteur d'échelle 
 df["OBS_VALUE_CORR"] = df["OBS_VALUE"] * (10 ** df["UNIT_MULT"])
@@ -130,14 +117,11 @@ df.insert(
 
 #changer le nom de la colonne GEO en DEP pour la fusion
 col = df.columns.tolist()
-col[2] = "DEP"
+col[0] = "DEP"
 df.columns = col
 
 # on exclut les DOM TOM
 df = df.loc[df['DEP'].str.len() == 2]
-
-# la corse est codée 20 dans l'autre fichier, on modifie
-df['DEP'] = df['DEP'].replace(['2A', '2B'],['20', '20'])
 
 # la variable "TOUR_RESID" donne l'origine du touriste : on filtre sur total (on ne distingue pas pour l'instant)
 df = df.loc[df['TOUR_RESID'].isin(["_T"])]
@@ -153,5 +137,16 @@ df = df.reset_index()
 
 base_touri = df
 
-# A CHANGER 
-#base_touri.to_csv("~/Project/Data/data_tourisme.csv")
+# On veut mettre notre nouvelle base de données dans Data 
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+data_dir = PROJECT_ROOT / "Data"
+data_dir.mkdir(exist_ok=True)
+
+output_path = data_dir / "data_tourisme.csv"
+base_touri.to_csv(output_path, index=False)
+
+print("Fichier tourisme sauvegardé dans :", output_path)
+
+
