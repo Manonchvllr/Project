@@ -55,6 +55,9 @@ for i in liste_dep:
 # on remet année et mois (devenues index) en variables normales
 df = df.reset_index() 
 
+# on crée deux departements différents pour la Corse pour pouvoir cartographier ensuite
+
+
 # saison (été ou hiver)
 conditions1 = [
     (df['MM'] <= 3) | (df['MM'] == 12),
