@@ -171,6 +171,112 @@ def gif(saison):
 
 
     
+###############################################################################################################
+# Importation des donnnée
+###############################################################################################################
+
+def carte_departements(
+    dataset,
+    shapefile_path,
+    dep_col_data="dep",
+    dep_col_shape="CODE_DEP",
+    code_col="code",
+    figsize=(10, 10),
+    cmap="Set2",
+    legend=True
+):
+    """
+    OBJECTIF
+    --------
+    Construire une carte des départements français en colorant chaque
+    département selon un code catégoriel.
+
+    PARAMÈTRES
+    ----------
+    dataset : DataFrame
+        Données contenant au minimum :
+        - dep : code département
+        - code : catégorie à représenter
+    shapefile_path : str
+        Chemin vers le shapefile des départements français
+    dep_col_data : str
+        Nom de la colonne département dans dataset
+    dep_col_shape : str
+        Nom de la colonne département dans le shapefile
+    code_col : str
+        Variable catégorielle à visualiser
+    figsize : tuple
+        Taille de la figure
+    cmap : str
+        Palette de couleurs matplotlib
+    legend : bool
+        Affichage de la légende
+
+    SORTIE
+    ------
+    Affiche une carte choroplèthe
+    """
+
+    # =====================================================
+    # 1. Copie défensive
+    # =====================================================
+    data = dataset.copy()
+
+    # =====================================================
+    # 2. Normalisation des codes département
+    # =====================================================
+    data[dep_col_data] = (
+    pd.to_numeric(data[dep_col_data], errors="coerce")
+    .dropna()
+    .astype(int)
+    .astype(str)
+    .str.zfill(2)
+    )
+
+
+    # =====================================================
+    # 3. Chargement du shapefile
+    # =====================================================
+    geo = gpd.read_file(shapefile_path)
+
+    geo[dep_col_shape] = geo[dep_col_shape].astype(str).str.zfill(2)
+
+    # =====================================================
+    # 4. Jointure spatiale
+    # =====================================================
+    geo_data = geo.merge(
+        data,
+        left_on=dep_col_shape,
+        right_on=dep_col_data,
+        how="left"
+    )
+
+    # =====================================================
+    # 5. Carte
+    # =====================================================
+    fig, ax = plt.subplots(figsize=figsize)
+
+    geo_data.plot(
+        column=code_col,
+        categorical=True,
+        cmap=cmap,
+        legend=legend,
+        edgecolor="black",
+        linewidth=0.5,
+        ax=ax,
+        missing_kwds={
+            "color": "lightgrey",
+            "label": "Données manquantes"
+        }
+    )
+
+    ax.set_title(
+        f"Carte des départements français selon {code_col}",
+        fontsize=14
+    )
+    ax.axis("off")
+
+    plt.show()
 
 
 

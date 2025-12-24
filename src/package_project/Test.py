@@ -68,7 +68,8 @@ def Donne(dep, path="base.csv", verbose=True):
     # =====================================================
     base = pd.read_csv(path)
 
-    dep = int(dep)
+    dep = str(dep)
+    dep = dep.zfill(2)
     data = base.loc[
         base["DEP"] == dep,
         ["AAAA", "MM", "TM", "OBS_VALUE_CORR", "NBJTX30", "NBJNEIG"]
