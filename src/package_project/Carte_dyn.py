@@ -7,6 +7,9 @@ import matplotlib.animation as animation
 import matplotlib as mpl
 import pandas as pd
 import geopandas as gpd
+import time
+from IPython.display import HTML, display
+from IPython.display import Image
 from shapely.errors import TopologicalError
 
 
@@ -160,4 +163,15 @@ def gif(saison):
         blit=False)
 
     ani.save(nom_fichier, writer="pillow", fps=1)
-    plt.close(fig)
+
+    plt.close(fig)  # évite l'affichage statique de la figure
+
+    time.sleep(2)
+    Image(filename = nom_fichier)
+
+
+    
+
+
+
+
