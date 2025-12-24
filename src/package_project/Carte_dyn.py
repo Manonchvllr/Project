@@ -177,10 +177,6 @@ def gif(saison):
 
 def carte_departements(
     dataset,
-    shapefile_path,
-    dep_col_data="dep",
-    dep_col_shape="CODE_DEP",
-    code_col="code",
     figsize=(10, 10),
     cmap="Set2",
     legend=True
@@ -225,8 +221,8 @@ def carte_departements(
     # =====================================================
     # 2. Normalisation des codes département
     # =====================================================
-    data[dep_col_data] = (
-    pd.to_numeric(data[dep_col_data], errors="coerce")
+    data["departement"] = (
+    pd.to_numeric(data["departement"], errors="coerce")
     .dropna()
     .astype(int)
     .astype(str)
@@ -237,27 +233,26 @@ def carte_departements(
     # =====================================================
     # 3. Chargement du shapefile
     # =====================================================
-    geo = gpd.read_file(shapefile_path)
-
-    geo[dep_col_shape] = geo[dep_col_shape].astype(str).str.zfill(2)
-
+    url = "https://france-geojson.gregoiredavid.fr/repo/departements.geojson"
+    gdf = gpd.read_file(url).rename(columns={"code": "departement"}).to_crs(epsg=3857)
+    gdf["departement"] = gdf["departement"].astype(str).str.zfill(2)
+    geo_data = gdf
     # =====================================================
     # 4. Jointure spatiale
     # =====================================================
-    geo_data = geo.merge(
+    geo_data = geo_data.merge(
         data,
-        left_on=dep_col_shape,
-        right_on=dep_col_data,
-        how="left"
+        on = "departement",
+        how="inner"
     )
-
+    #print(geo_data.info())
     # =====================================================
     # 5. Carte
     # =====================================================
     fig, ax = plt.subplots(figsize=figsize)
 
     geo_data.plot(
-        column=code_col,
+        column="code",
         categorical=True,
         cmap=cmap,
         legend=legend,
@@ -271,7 +266,7 @@ def carte_departements(
     )
 
     ax.set_title(
-        f"Carte des départements français selon {code_col}",
+        f"Carte des départements français selon code",
         fontsize=14
     )
     ax.axis("off")
