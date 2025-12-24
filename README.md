@@ -13,7 +13,60 @@ En nous appuyant sur la fréquentation des hébergements touristiques et sur les
 ## Problématique: 
 En quoi l’évolution récente du climat (hausse des températures, événements extrêmes) modifie-t-elle les flux touristiques et la saisonnalité de la fréquentation des hébergements en France métropolitaine au niveau départemental ? Nos données sont-elles suffisamment pertinentes pour analyser l’impact du réchauffement climatique sur les flux touristiques départementaux en France métropolitaine ?
 
-## Modèle utilisé: 
+## Modèle utilisé:
+### Cadre théorique : désaisonnalisation
+Pourquoi désaisonnaliser avant les tests de stationnarité ?
+Les tests de racine unitaire (ADF, PP, KPSS) reposent sur des hypothèses asymptotiques qui sont violées en présence de :
+saisonnalité déterministe non traitée, ruptures périodiques régulières (mensuelles ici). Une saisonnalité non corrigée peut conduire à : une fausse non-stationnarité, une surestimation de l’ordre d’intégration,
+des conclusions erronées sur la cointégration.
+
+Approche retenue : saisonnalité déterministe
+Nous utilisons une approche classique et valide économétriquement :
+
+Yt = µ + 𝛿1 * D1 + ... + 𝛿12 * D11 + ε où ε~BB(0,sd), 𝐷𝑚 : sont des dummies mensuelles,
+Décision :
+si au moins un coefficient saisonnier est significatif alors saisonnalité présente
+sinon alors pas de correction nécessaire
+
+### Cadre théorique : test de Dickey-Fuller augmenté (ADF)
+Problématique de la stationnarité
+En économétrie des séries temporelles, une série non stationnaire pose trois problèmes majeurs :
+risque de régression fallacieuse, lois asymptotiques non standards, tests de significativité invalides
+Une série est stationnaire si : sa moyenne est constante, sa variance est finie et constante, sa structure d’autocorrélation est stable dans le temps
+
+H₀ : la série possède une racine unitaire (non stationnaire) VS H₁ : la série est stationnaire
+
+Décision :
+si p-value < α → rejet de H₀ → série stationnaire
+sinon on calcule la serie differncier(Yt - Yt-1) puis on refait le test.
+
+l'ordre d'integration est le nombre de foi que l'on à du differencier la serie pour que celle -ci devienne stattionnaire
+
+### Cadre théorique :modèle ARDL 
+
+Le modèle ARDL (AutoRegressive Distributed Lag) est adapté lorsque : Les variables sont intégrées d’ordre différent (I(0) et I(1)), et que l'on souhaite distinguer effets de court terme et relation de long terme.
+
+Forme générale :
+
+Yt = µ + 𝛿1 * D1 + ... + 𝛿12 * D11 + a1 * Yt-1 + ... + ap * Yt-p + b1 * X't + ... + bq * X't-p + ε ou ε~BB(0,sd)
+
+Yt: flux touristique à la periode t
+
+𝑋t : variables climatiques à la periode t
+
+𝛽 : effet du climat sur le flux touristique
+
+### Modèle de prediction :XGBOOST
+
+XGBoost est un algorithme de gradient boosting sur arbres de décision qui construit un modèle prédictif comme une somme séquentielle d’arbres faibles, chaque nouvel arbre corrigeant les erreurs des précédents par descente de gradient.
+Sa spécificité réside dans une fonction objectif régularisée et l’utilisation d’une approximation de Taylor d’ordre 2, ce qui lui confère une forte performance prédictive, au prix d’une interprétabilité limitée et sans vocation causale.
+
+
+
+
+
+
+
 
 ## Données utilisées: 
 

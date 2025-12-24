@@ -81,7 +81,10 @@ df = df.drop("GEO_OBJECT", axis = 1)
 # on supprime TERRTYPO car tout est identique
 df = df.drop("TERRTYPO", axis = 1)
 
-departement_noms = {
+# on exclut les DOM TOM
+df = df.loc[df['GEO'].str.len() == 2]
+
+DEP_NOM = {
     "01": "Ain", "02": "Aisne", "03": "Allier", "04": "Alpes-de-Haute-Provence",
     "05": "Hautes-Alpes", "06": "Alpes-Maritimes", "07": "Ardèche", "08": "Ardennes",
     "09": "Ariège", "10": "Aube", "11": "Aude", "12": "Aveyron", "13": "Bouches-du-Rhône",
@@ -111,8 +114,8 @@ departement_noms = {
 
 df.insert(
     1,  # position (0 = première colonne, 1 = deuxième, etc.)
-    "nom_departement",  # nom de la nouvelle colonne
-    df["GEO"].map(departement_noms)
+    "DEP_NOM",  # nom de la nouvelle colonne
+    df["GEO"].map(DEP_NOM)
 )
 
 #changer le nom de la colonne GEO en DEP pour la fusion
@@ -120,17 +123,18 @@ col = df.columns.tolist()
 col[0] = "DEP"
 df.columns = col
 
-# on exclut les DOM TOM
-df = df.loc[df['DEP'].str.len() == 2]
+df['DEP'] = df['DEP'].replace(['2A', '2B'],['20', '20'])
 
 # la variable "TOUR_RESID" donne l'origine du touriste : on filtre sur total (on ne distingue pas pour l'instant)
-df = df.loc[df['TOUR_RESID'].isin(["_T"])]
+df = df[df["TOUR_RESID"] != "_T"]
 
 # print(df["ACTIVITY"].value_counts(dropna=False))
 # Aucun camping n'est présent dans notre sélection
 
+df['TOUR_RESID'] = df['TOUR_RESID'].replace(['250', '1_X_250'],['France', 'Étranger'])
+
 # on somme les arrivées par année et mois
-df = df.groupby(['AAAA','MM', 'DEP'])["OBS_VALUE_CORR"].sum()
+df = df.groupby(['AAAA','MM', 'DEP', 'DEP_NOM', 'TOUR_RESID'])["OBS_VALUE_CORR"].sum()
 
 # on remet année et mois (devenues index) en variables normales
 df = df.reset_index() 
