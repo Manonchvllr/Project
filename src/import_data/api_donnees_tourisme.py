@@ -123,8 +123,6 @@ col = df.columns.tolist()
 col[0] = "DEP"
 df.columns = col
 
-df['DEP'] = df['DEP'].replace(['2A', '2B'],['20', '20'])
-
 # la variable "TOUR_RESID" donne l'origine du touriste : on filtre sur total (on ne distingue pas pour l'instant)
 df = df[df["TOUR_RESID"] != "_T"]
 

@@ -21,7 +21,7 @@ cols = ['NOM_USUEL',
         "NBJNEIG", 
         "NBJSOLNG"]
 
-cols_indic = cols[3:len(cols)] 
+cols_indic = cols[2:len(cols)] 
 
 
 # pour chaque département, on va procéder de la même façon
@@ -95,7 +95,10 @@ base_temp.head()
 from pathlib import Path
 
 # dossier racine du projet = 3 niveaux au-dessus de ce fichier
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+try:
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+except NameError:
+    PROJECT_ROOT = Path.cwd().parents[1]
 
 data_dir = PROJECT_ROOT / "Data"
 data_dir.mkdir(exist_ok=True)
