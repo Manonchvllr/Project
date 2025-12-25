@@ -1,4 +1,4 @@
-from package_project import indicateurs_climat
+from src.package_project import indicateurs_climat
 import geopandas as gpd
 from cartiflette import carti_download
 import matplotlib.pyplot as plt

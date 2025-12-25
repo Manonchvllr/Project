@@ -8,18 +8,18 @@ from fonctions import recup_url, filtre_data
 
 cols = ['NOM_USUEL', 
         "AAAAMM",
-        "TM", 
-        "TX",
-        "RR", 
-        "UMM", 
-        "FFM", 
-        "TXMIN", 
-        "NBJTX0", 
-        "NBJTX25", 
-        "NBJTX30", 
-        "NBJTX35",
-        "NBJNEIG", 
-        "NBJSOLNG"]
+        "TM", # moyenne mensuelle des (TN+TX)/2 quotidiennes (en °C et 1/10)
+        "TX", # moyenne mensuelle des températures maximales (TX) quotidiennes (en °C et 1/10)
+        "RR", # cumul mensuel des hauteurs de précipitation (en mm et 1/10)
+        "UMM", # moyenne mensuelle des humidités moyennes (UM) quotidiennes (en %)
+        "FFM", # moyenne mensuelle de la force moyenne quotidienne du vent moyenné sur 10 mn (FFM)
+        "TXMIN", # minimum mensuel des TX quotidiennes (en °C et 1/10)
+        "NBJTX0", # nombre de jours avec TX ≤ 0°C
+        "NBJTX25", # nombre de jours avec TX ≥ 25°C
+        "NBJTX30", # nombre de jours avec TX ≥ 30°C
+        "NBJTX35", # nombre de jours avec TX ≥ 35°C
+        "NBJNEIG", # nombre de jours avec précipitation de neige
+        "NBJSOLNG"] # nombre de jours avec sol couvert de neige (à partir de SOLNEIGE quotidien)
 
 cols_indic = cols[2:len(cols)] 
 
