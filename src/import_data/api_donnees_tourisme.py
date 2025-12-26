@@ -121,7 +121,7 @@ df.insert(
 
 #changer le nom de la colonne GEO en DEP pour la fusion
 col = df.columns.tolist()
-col[0] = "DEP"
+col[2] = "DEP"
 df.columns = col
 
 # En faisant print(df["UNIT_LOC_RANKING"].value_counts(dropna=False)), 
