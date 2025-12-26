@@ -20,9 +20,6 @@ cols = [
     'OBS_VALUE'
 ]
 
-
-#df = pd.read_csv("s3://machevallier/DS_TOUR_FREQ_data.csv", sep=';', usecols=cols)
-
 df = recup_url.url_to_df(url = "https://www.data.gouv.fr/api/1/datasets/r/1129fd80-2564-452c-86d4-9e36e7cca4a5",
                           cols_a_conserver=cols,
                           type_zip="zip",
@@ -42,10 +39,6 @@ df = df.drop(columns=["DECIMALS", "UNIT_MULT", "OBS_VALUE"])
 
 # on choisit le nombre d'arrivée comme indicateur
 df = df.loc[df['TOUR_MEASURE'].isin(["ARR"])]
-
-#df['ACTIVITY'] = df['ACTIVITY'].replace(['I553'],['CAMPING'])
-
-#df = df[df["ACTIVITY"] == "CAMPING"]
 
 df = df.loc[df['OBS_STATUS'].isin(["A", "P"])]
 # on exclut les valeurs manquantes (O), A= Normale (définitive/validée), P= Valeur provisoire
@@ -125,7 +118,7 @@ col[2] = "DEP"
 df.columns = col
 
 # En faisant print(df["UNIT_LOC_RANKING"].value_counts(dropna=False)), 
-# seul "_T" apparaît, c'est à dire que l'on a aucune donnée sur le nombre d'étoile de nos hébergements à cause des varaianbles choisies
+# seul "_T" apparaît, c'est à dire que l'on a aucune donnée sur le nombre d'étoile de nos hébergements à cause des varaiables choisies
 # on peut supprimer la colonne
 df = df.drop(columns=["UNIT_LOC_RANKING"])
 
@@ -156,7 +149,7 @@ base_touri.to_csv(output_path, index=False)
 
 print("Fichier tourisme sauvegardé dans :", output_path)
 
-# Mainenant nous allons considérer l'origine des touristes
+# Mainenant nous allons considérer l'origine des touristes dans un dataframe à part
 # la variable "TOUR_RESID" donne l'origine du touriste : on remarque que total prend en compte Français ou Etranger
 # Ainsi on enlève total pour considérer l'origine des touristes
 dl = dl[dl["TOUR_RESID"] != "_T"]
