@@ -10,19 +10,13 @@ cols = ['NOM_USUEL',
         "AAAAMM",
         "TM", # moyenne mensuelle des (TN+TX)/2 quotidiennes (en °C et 1/10)
         "TX", # moyenne mensuelle des températures maximales (TX) quotidiennes (en °C et 1/10)
-        "RR", # cumul mensuel des hauteurs de précipitation (en mm et 1/10)
-        "UMM", # moyenne mensuelle des humidités moyennes (UM) quotidiennes (en %)
-        "FFM", # moyenne mensuelle de la force moyenne quotidienne du vent moyenné sur 10 mn (FFM)
-        "TXMIN", # minimum mensuel des TX quotidiennes (en °C et 1/10)
         "NBJTX0", # nombre de jours avec TX ≤ 0°C
         "NBJTX25", # nombre de jours avec TX ≥ 25°C
         "NBJTX30", # nombre de jours avec TX ≥ 30°C
         "NBJTX35", # nombre de jours avec TX ≥ 35°C
-        "NBJNEIG", # nombre de jours avec précipitation de neige
-        "NBJSOLNG"] # nombre de jours avec sol couvert de neige (à partir de SOLNEIGE quotidien)
+        "NBJNEIG"] # nombre de jours avec précipitation de neige
 
 cols_indic = cols[2:len(cols)] 
-
 
 # pour chaque département, on va procéder de la même façon
 # on crée donc une fonction qui prend le département comme argument
@@ -38,8 +32,6 @@ def agreg_dpt(DEP):
 # on sélectionne nos mois et années d'intérêt
     df_filtre = filtre_data.filtre_annee_mois(df_filtre)
 # on calcule la moyenne départementale pour toutes les variables
-    df_filtre['TX_num']=df_filtre.TX.astype("float64")
-    df_filtre['TXMIN_num']=df_filtre.TXMIN.astype("float64")
     df_filtre = df_filtre.groupby(['AAAA','MM'])[cols_indic].mean()
     df_filtre['DEP'] = DEP
     return(df_filtre)
@@ -58,8 +50,7 @@ df = df.reset_index()
 df["DEP"] = df.DEP.astype(str)
 df["DEP"] = df["DEP"].str.zfill(2)
 
-
-# on crée deux departements différents pour la Corse pour pouvoir cartographier ensuite
+# on crée deux departements différents pour la Corse (jusque là codée en 20) pour pouvoir cartographier ensuite
 new_rows = df.loc[df['DEP']=="20"].copy()
 new_rows1 = new_rows.copy()
 new_rows["DEP"] = "2A"
