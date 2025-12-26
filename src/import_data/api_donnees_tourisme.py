@@ -152,3 +152,8 @@ base_touri.to_csv(output_path, index=False)
 print("Fichier tourisme sauvegardé dans :", output_path)
 
 
+# la variable "TOUR_RESID" donne l'origine du touriste : on filtre sur total (on ne distingue pas pour l'instant)
+df = df[df["TOUR_RESID"] != "_T"]
+
+
+df['TOUR_RESID'] = df['TOUR_RESID'].replace(['250', '1_X_250'],['France', 'Étranger'])
