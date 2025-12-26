@@ -10,6 +10,7 @@ cols = [
     'TERRTYPO',
     'TOUR_MEASURE',
     'TOUR_RESID',
+    'UNIT_LOC_RANKING',
     'CONF_STATUS',
     'DECIMALS',
     'OBS_STATUS',
@@ -120,19 +121,23 @@ df.insert(
 
 #changer le nom de la colonne GEO en DEP pour la fusion
 col = df.columns.tolist()
-col[0] = "DEP"
+col[2] = "DEP"
 df.columns = col
 
+# En faisant print(df["UNIT_LOC_RANKING"].value_counts(dropna=False)), 
+# seul "_T" apparaît, c'est à dire que l'on a aucune donnée sur le nombre d'étoile de nos hébergements à cause des varaianbles choisies
+# on peut supprimer la colonne
+df = df.drop(columns=["UNIT_LOC_RANKING"])
+
+dl = df #on enregistre la base à ce instant pour l'utiliser après
 # la variable "TOUR_RESID" donne l'origine du touriste : on filtre sur total (on ne distingue pas pour l'instant)
-df = df[df["TOUR_RESID"] != "_T"]
+df = df.loc[df['TOUR_RESID'].isin(["_T"])]
 
 # print(df["ACTIVITY"].value_counts(dropna=False))
 # Aucun camping n'est présent dans notre sélection
 
-df['TOUR_RESID'] = df['TOUR_RESID'].replace(['250', '1_X_250'],['France', 'Étranger'])
-
 # on somme les arrivées par année et mois
-df = df.groupby(['AAAA','MM', 'DEP', 'DEP_NOM', 'TOUR_RESID'])["OBS_VALUE_CORR"].sum()
+df = df.groupby(['AAAA','MM', 'DEP', 'DEP_NOM'])["OBS_VALUE_CORR"].sum()
 
 # on remet année et mois (devenues index) en variables normales
 df = df.reset_index() 
@@ -151,4 +156,29 @@ base_touri.to_csv(output_path, index=False)
 
 print("Fichier tourisme sauvegardé dans :", output_path)
 
+# Mainenant nous allons considérer l'origine des touristes
+# la variable "TOUR_RESID" donne l'origine du touriste : on remarque que total prend en compte Français ou Etranger
+# Ainsi on enlève total pour considérer l'origine des touristes
+dl = dl[dl["TOUR_RESID"] != "_T"]
 
+# on renomme 
+dl['TOUR_RESID'] = dl['TOUR_RESID'].replace(['250', '1_X_250'],['France', 'Étranger'])
+
+# on somme les arrivées par année et mois
+dl = dl.groupby(['AAAA','MM', 'DEP', 'DEP_NOM','TOUR_RESID'])["OBS_VALUE_CORR"].sum()
+
+# on remet année et mois (devenues index) en variables normales
+dl = dl.reset_index() 
+
+base_touri2 = dl
+# On veut mettre notre nouvelle base de données dans Data 
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+data_dir = PROJECT_ROOT / "Data"
+data_dir.mkdir(exist_ok=True)
+
+output_path = data_dir / "data_tourisme2.csv"
+base_touri2.to_csv(output_path, index=False)
+
+print("Fichier tourisme sauvegardé dans :", output_path)
