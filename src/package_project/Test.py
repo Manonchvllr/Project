@@ -97,7 +97,7 @@ def Donne(dep, path="base.csv", verbose=True):
         .mean()
         .sort_index()
     )
-
+    data1 = data.copy() # Garder l'enssembles des données pour une comparaison avec la prediction
     # =====================================================
     # 3. Restriction avant la crise sanitaire
     # =====================================================
@@ -107,34 +107,16 @@ def Donne(dep, path="base.csv", verbose=True):
     # 4. Mise à fréquence mensuelle explicite
     # =====================================================
     data = data.asfreq("MS")
-
+    data1 = data1.asfreq("MS")
     # =====================================================
     # 5. Interpolation temporelle
     # =====================================================
     data = data.interpolate(method="time")
-
+    data1 = data1.interpolate(method="time")
     # =====================================================
     # 6. Transformation logarithmique
     # =====================================================
-    data["OBS_VALUE_CORR"] = np.log(data["OBS_VALUE_CORR"])
-
-    # =====================================================
-    # 7. Messages utilisateur
-    # =====================================================
-    if verbose:
-        print("===================================")
-        print(f"DÉPARTEMENT {dep}")
-        print("===================================")
-        for annee, mois in donne_pres.items():
-            print(f"{annee} : mois observés → {mois}")
-
-        print("\nNOTE MÉTHODOLOGIQUE")
-        print("- Données postérieures à 2020 exclues (crise sanitaire)")
-        print("- Mois manquants interpolés par méthode temporelle")
-        print("- Flux touristique transformé en logarithme")
-        print("===================================")
-
-    return data, donne_pres
+    return data, donne_pres , data1
 
 ##########################################################################################################
 # Graphique personnaliser pour l'evolution des series 
@@ -179,6 +161,7 @@ def Correlogramme(variable, Departement):
     axes[1].set_title(f"PACF – {variable}")
     plt.tight_layout()
     plt.show()
+        
 
 #######################################################################################################"
 # DESAISONALISATION
@@ -394,7 +377,7 @@ def Dickey_fuller(
 ###############################################################################################
 # CALCULE DU POIDS DU CLIMAT DANS LA PREDICTION DU FLUX TOURISTIQUE
 ##############################################################################################
-def modele(Departement):
+def modele(Departement, base):
     """
     OBJECTIF
     --------
@@ -557,6 +540,7 @@ def modele(Departement):
         print(ecm_res.summary())
         print(bounds)
         print("===================================")
+        
     print(commentaire)
     return commentaire, code
 
@@ -662,9 +646,8 @@ def Test(departement):
     # ======================================================================================
     # 1) PRÉPARATION ET VALIDATION DES DONNÉES
     # ======================================================================================
-    print("\n#1) Préparation des données")
 
-    Departement, donne_pres = Donne(departement)
+    Departement, donne_pres, base = Donne(departement)
 
     # Justification :
     # Toute analyse économétrique repose sur des données complètes.
@@ -709,20 +692,11 @@ def Test(departement):
     print("\n#3) Modélisation économétrique (ARDL / UECM)")
     if condition :
         print("\nLa condition necessaire pour pouvoire faire le modèle ARDL qui est que toutes le variables sont\nintegrées d'ordre inferieur à 1 est satisfait\n")
-        conclusion, code = modele(Departement)
+        conclusion, code = modele(Departement, base)
     else:
         print("\nLa modelisation ARDL n'est pas justifier")
         conclusion, code = "Nous ne pouvons rien conclu avec cette approche de modelisation", "pas_de_modele"
               
-    # ======================================================================================
-    # 4) PREDICTION AVEC XGBOOST : lorsque le resultats est concluant 
-    # ======================================================================================
-    
-    if code == "bon" :
-        print("===================================")
-        print("Prediction avec XGBOOST")
-        _ = Prediction(Departement)
-        print("===================================")
 
         
     # ======================================================================================
@@ -772,239 +746,3 @@ def Resultat(nombre):
                              "conclusion" : conclusion,
                              "code" : code})
     return resultat
-
-
-#########################################################################################################
-# PREDICTION
-#########################################################################################################
-def Prediction(df, horizon=15):
-    """
-    Prévision du flux touristique avec XGBoost
-    """
-
-    # 2) Création des retards (lags)
-    max_lag = 12
-    for lag in range(1, max_lag + 1):
-        df[f"y_lag_{lag}"] = df["OBS_VALUE_CORR"].shift(lag)
-
-    df = df.dropna()
-
-    # 3) Séparation X / y
-    X = df.drop(columns="OBS_VALUE_CORR")
-    y = df["OBS_VALUE_CORR"]
-
-    # 4) Validation temporelle
-    tscv = TimeSeriesSplit(n_splits=5)
-
-    # 5) Modèle XGBoost
-    model = XGBRegressor(
-        objective="reg:squarederror",
-        random_state=42
-    )
-
-    # 6) Grille d’hyperparamètres
-    param_grid = {
-        "n_estimators": [200, 400],
-        "max_depth": [3, 5, 7],
-        "learning_rate": [0.01, 0.05, 0.1],
-        "subsample": [0.7, 0.9],
-        "colsample_bytree": [0.7, 0.9]
-    }
-
-    grid = GridSearchCV(
-        model,
-        param_grid,
-        cv=tscv,
-        scoring="neg_mean_squared_error",
-        n_jobs=-1
-    )
-
-    grid.fit(X, y)
-    best_model = grid.best_estimator_
-
-    # ÉVALUATION HORS-ÉCHANTILLON
-    
-    h_eval = 12  # 12 derniers mois pour l'évaluation
-    
-    X_train = X.iloc[:-h_eval]
-    y_train = y.iloc[:-h_eval]
-    
-    X_test = X.iloc[-h_eval:]
-    y_test = y.iloc[-h_eval:]
-    
-    best_model.fit(X_train, y_train)
-    
-    y_pred_test = best_model.predict(X_test)
-    
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred_test))
-    mae = mean_absolute_error(y_test, y_pred_test)
-    mape = np.mean(np.abs((y_test - y_pred_test) / y_test)) * 100
-    r2 = r2_score(y_test, y_pred_test)
-    
-    metrics = {
-        "RMSE": rmse,
-        "MAE": mae,
-        "MAPE (%)": mape,
-        "R2": r2
-    }
-    
-    print("=== Évaluation hors-échantillon ===")
-    for k, v in metrics.items():
-        print(f"{k} : {v:.4f}")
-
-
-    # 7) Prévision récursive
-    future = []
-    last_row = X.iloc[-1].copy()
-
-    for _ in range(horizon):
-        y_pred = best_model.predict(last_row.values.reshape(1, -1))[0]
-        future.append(y_pred)
-
-        # Mise à jour des lags
-        for i in range(max_lag, 1, -1):
-            last_row[f"y_lag_{i}"] = last_row[f"y_lag_{i-1}"]
-        last_row["y_lag_1"] = y_pred
-
-    # 8) Index futur
-    future_index = pd.date_range(
-        start=df.index[-1] + pd.offsets.MonthBegin(),
-        periods=horizon,
-        freq="MS"
-    )
-
-    future_series = pd.Series(future, index=future_index)
-
-    # 9) Graphique
-    plt.figure(figsize=(10, 6))
-    plt.plot(df.index, df["OBS_VALUE_CORR"], label="Observé", color="black")
-    plt.plot(future_series.index, future_series, 
-             label="Prévision", color="red", linestyle="--")
-    plt.axvline(df.index[-1], color="gray", linestyle=":")
-    plt.legend()
-    plt.title("Prévision du flux touristique")
-    plt.show()
-
-    return metrics
-
-
-
-#########################################################################################################
-# IMPUTATION DES VALEURS MANQUANTES
-#########################################################################################################
-
-def Imputation(df, seasonal_period=12, max_order=2):
-    """
-    Impute les valeurs manquantes après asfreq("MS")
-    à l'aide d'un modèle SARIMA pour chaque série.
-
-    PARAMETRES
-    ----------
-    df : DataFrame
-        Index DatetimeIndex
-        Colonnes : flux_touris, TM, NBTX30, NBNEIG
-
-    seasonal_period : int
-        Période saisonnière (12 pour mensuel)
-
-    max_order : int
-        Ordre maximal p,q,P,Q testé
-
-    RETURNS
-    -------
-    df_imputed : DataFrame
-        DataFrame mensuelle complète sans NaN
-    """
-
-    # Mise à fréquence mensuelle
-    df = df.sort_index()
-    df_ms = df.asfreq("MS")
-
-    df_imputed = df_ms.copy()
-
-    for col in df_ms.columns:
-
-        serie = df_ms[col]
-
-        # Si aucune donnée manquante, on passe
-        if serie.isna().sum() == 0:
-            continue
-
-        y_obs = serie.dropna()
-
-        best_aic = np.inf
-        best_model = None
-
-        # Recherche du meilleur SARIMA
-        AIC = []
-        BIC = []
-        p_q =[]
-        for p in range(max_order + 1):
-            for d in [0, 1]:
-                for q in range(max_order + 1):
-                    for P in range(max_order + 1):
-                        for D in [0, 1]:
-                            for Q in range(max_order + 1):
-                                try:
-                                    model = SARIMAX(
-                                        y_obs,
-                                        order=(p, d, q),
-                                        seasonal_order=(P, D, Q, seasonal_period),
-                                        enforce_stationarity=False,
-                                        enforce_invertibility=False)
-                                        # Estimation
-                                    resultats = model.fit(cov_type="HC1")
-                        
-                                    #Validation des residus
-                                    lb = acorr_ljungbox(resultats.resid,lags=[12],return_df=True)
-                                    if lb.lb_pvalue.iloc[0] > 0.05:
-                                        AIC.append(resultats.aic)
-                                        BIC.append(resultats.bic)
-                                        p_q.append((p,d,q,P,D,Q))
-
-                                except:
-                                    continue
-        #  selection du meilleur modèle pour la prediction des valeurs manquantes                            
-        if not AIC:
-            p,q = 0, 0
-            best_model = SARIMAX(
-                y_obs,
-                order=(p, d, q),
-                seasonal_order=(P, D, Q, seasonal_period),
-                enforce_stationarity=False,
-                enforce_invertibility=False)
-            # Estimation
-            resultats = model.fit(cov_type="HC1")
-            
-        else:
-            (p,d,q,P,D,Q) = p_q[AIC.index(min(AIC))]
-            best_model = SARIMAX(
-                y_obs,
-                order=(p, d, q),
-                seasonal_order=(P, D, Q, seasonal_period),
-                enforce_stationarity=False,
-                enforce_invertibility=False)
-            # Estimation
-            resultats = model.fit(cov_type="HC1")
-
-        # Prédiction sur toute la période
-        pred = best_model.get_prediction(
-            start=df_ms.index[0],
-            end=df_ms.index[-1]
-        ).predicted_mean
-
-        #Imputation uniquement des NaN
-        df_imputed[col] = serie.combine_first(pred)
-
-    return df_imputed
-
-
-
-
-
-
-
-
-
-    
-                                    
