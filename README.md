@@ -1,14 +1,15 @@
 # Projet Python pour la Data Science
 
 ## Sujet: 
-En France métropolitaine, la température a augmenté de 1.8°C dans la décennie 2011-2019 par rapport à la moyenne 1901-1930, dont 1.0°C par rapport à la moyenne sur 1976-2005. Ce réchauffement peut avoir plusieurs incidences : augmentation des inondations, des orages, des vagues de chaleur, des sécheresses, des incendies, et diminution de l’enneigement. Ces événements ont un impact durable sur les flux touristiques en France métropolitaine ainsi que sur les infrastructures touristiques : de nouveaux territoires gagnent en attractivité, les habitudes des vacanciers commencent à changer, redessinant progressivement les saisons touristiques.
+En France métropolitaine, la température a augmenté de 1,8°C dans la décennie 2011-2019 par rapport à la moyenne 1901-1930, dont 1,0°C par rapport à la moyenne sur 1976-2005. Ce réchauffement peut avoir plusieurs incidences : augmentation des inondations, des orages, des vagues de chaleur, des sécheresses, des incendies et diminution de l’enneigement. Ces événements ont un impact durable sur les flux touristiques en France métropolitaine ainsi que sur les infrastructures touristiques : de nouveaux territoires gagnent en attractivité, les habitudes des vacanciers commencent à changer, redessinant progressivement les saisons touristiques.
 
 **Risque par risque, la vulnérabilité du tourisme face au climat**
 ![Risque par risque, la vulnérabilité du tourisme face au climat](https://www.adaptation-changement-climatique.gouv.fr/sites/cracc/files/inline-images/catastrophes%20climatiques.png)
 
-*Tableau extrait du guide Ademe ‘Opérateurs et territoires touristiques : s'adapter pour faire face au changement climatique’*
+*Tableau extrait du guide ADEME ‘Opérateurs et territoires touristiques : s'adapter pour faire face au changement climatique’*
 
-En nous appuyant sur la fréquentation des hébergements touristiques et sur les données climatologiques, nous allons chercher à représenter l’impact du réchauffement climatique sur les flux touristiques au niveau départemental. 
+En nous appuyant sur la fréquentation des hébergements touristiques et sur les données climatologiques, nous cherchons à représenter l’impact du réchauffement climatique sur les flux touristiques au niveau départemental. 
+Dans ce projet, nous utilisons la température comme indicateur du réchauffement climatique, par souci de concision, même si d'autres variables auraient pu être pertinentes (sécheresse, humidité). Nous distinguons également le tourisme d’été et le tourisme d’hiver entre 2011 et 2019 afin de mieux représenter la répartition des flux touristiques par département en France métropolitaine.
 
 ## Problématique: 
 Comment les variations de température entre 2011 et 2019 affectent-elles les flux touristiques d'été et d'hiver, mais également la répartition spatiale des séjours en France métropolitaine? Dans quelle mesure les données disponibles permettent-elles d’identifier ces effets ?
