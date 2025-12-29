@@ -1,2 +1,4 @@
 *.csv
+*.gif
+*.sqlite
 __pycache__/

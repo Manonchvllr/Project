@@ -41,15 +41,12 @@ def donnee_carte(data):
 
 
 
-def mise_en_forme_carte(carte_prete, annees, mois, indicateur, titre_carte, plotting, evolution):
+def mise_en_forme_carte(carte_prete, annees, mois, indicateur, titre_carte, titre_axe, plotting, evolution):
 
     if evolution == False:
-        titre_axe="Nombre de jours"
         carte=carte_prete
-
         indic=indicateur
     elif evolution == True:
-        titre_axe="Taux de variation"
         if all(item in [6,7,8,9] for item in mois):
             saison = ["été"]         #  rouge
         elif all(item in [1,2,3,12] for item in mois):
