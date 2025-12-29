@@ -11,7 +11,7 @@ En France métropolitaine, la température a augmenté de 1.8°C dans la décenn
 En nous appuyant sur la fréquentation des hébergements touristiques et sur les données climatologiques, nous allons chercher à représenter l’impact du réchauffement climatique sur les flux touristiques au niveau départemental. 
 
 ## Problématique: 
-En quoi l’évolution récente du climat (hausse des températures, événements extrêmes) modifie-t-elle les flux touristiques et la saisonnalité de la fréquentation des hébergements en France métropolitaine au niveau départemental ? Nos données sont-elles suffisamment pertinentes pour analyser l’impact du réchauffement climatique sur les flux touristiques départementaux en France métropolitaine ?
+Comment les variations de température entre 2011 et 2019 affectent-elles les flux touristiques d'été et d'hiver, mais également la répartition spatiale des séjours en France métropolitaine? Dans quelle mesure les données disponibles permettent-elles d’identifier ces effets ?
 
 ## Modèle utilisé:
 ### Cadre théorique : désaisonnalisation
@@ -61,12 +61,9 @@ Yt: flux touristique à la periode t
 XGBoost est un algorithme de gradient boosting sur arbres de décision qui construit un modèle prédictif comme une somme séquentielle d’arbres faibles, chaque nouvel arbre corrigeant les erreurs des précédents par descente de gradient.
 Sa spécificité réside dans une fonction objectif régularisée et l’utilisation d’une approximation de Taylor d’ordre 2, ce qui lui confère une forte performance prédictive, au prix d’une interprétabilité limitée et sans vocation causale.
 
+## Navigation au sein du projet
 
-
-
-
-
-
+Il suffit d'exécuter successivement les cellules du rapport : [rapport.ipynb](https://github.com/Manonchvllr/Project/blob/main/rapport.ipynb)
 
 ## Données utilisées: 
 
