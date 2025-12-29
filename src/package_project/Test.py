@@ -116,6 +116,9 @@ def Donne(dep, path="base.csv", verbose=True):
     # =====================================================
     # 6. Transformation logarithmique
     # =====================================================
+    data["OBS_VALUE_CORR"] = np.log(data["OBS_VALUE_CORR"])
+    data1["OBS_VALUE_CORR"] = np.log(data1["OBS_VALUE_CORR"])
+
     return data, donne_pres , data1
 
 ##########################################################################################################
@@ -161,7 +164,6 @@ def Correlogramme(variable, Departement):
     axes[1].set_title(f"PACF – {variable}")
     plt.tight_layout()
     plt.show()
-        
 
 #######################################################################################################"
 # DESAISONALISATION
@@ -540,7 +542,67 @@ def modele(Departement, base):
         print(ecm_res.summary())
         print(bounds)
         print("===================================")
+        print("\nPrediction avec le modèle ARDL sur les 36 mois suivants")
+
+        # preparation des données 
+        horizon = 36
+        X_future = base.loc[base.index[-horizon:], ["TM", "NBJTX30", "NBJNEIG"]]
+
+        #Prediction
+        y_pred = res.predict(
+        start=Departement.index[-1],
+        end=base.index[-1],
+        exog_oos=X_future)
+
+        # Intervalle de confiance
+        sigma = res.resid.std()
+        ic_inf = y_pred - 1.96 * sigma
+        ic_sup = y_pred + 1.96 * sigma
+
+
+
+        #Affichage de la prediction
+        fig, ax = plt.subplots(figsize=(12, 10))
+        ax.plot(
+            base.index,
+            base["OBS_VALUE_CORR"],
+            color="black",
+            label="Observé"
+        )
         
+        ax.plot(
+            y_pred.index,
+            y_pred,
+            color="red",
+            label="Prévision (36 mois)"
+        )
+        
+        ax.fill_between(
+            y_pred.index,
+            ic_inf,
+            ic_sup,
+            color="blue",
+            alpha=0.2,
+            label="IC 95 %"
+        )
+        
+        ax.axvline(
+            Departement.index[-1],
+            linestyle="--",
+            color="gray"
+        )
+        
+        ax.set_title("Prévision du flux touristique (ARDL – exogènes observées)")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Flux touristique (log)")
+        ax.legend()
+        
+        plt.close()
+
+
+
+        
+
     print(commentaire)
     return commentaire, code
 
@@ -646,6 +708,7 @@ def Test(departement):
     # ======================================================================================
     # 1) PRÉPARATION ET VALIDATION DES DONNÉES
     # ======================================================================================
+    print("\n#1) Préparation des données")
 
     Departement, donne_pres, base = Donne(departement)
 
@@ -696,7 +759,7 @@ def Test(departement):
     else:
         print("\nLa modelisation ARDL n'est pas justifier")
         conclusion, code = "Nous ne pouvons rien conclu avec cette approche de modelisation", "pas_de_modele"
-              
+            
 
         
     # ======================================================================================
