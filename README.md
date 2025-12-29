@@ -9,6 +9,7 @@ En France métropolitaine, la température a augmenté de 1,8°C dans la décenn
 *Tableau extrait du guide ADEME ‘Opérateurs et territoires touristiques : s'adapter pour faire face au changement climatique’*
 
 En nous appuyant sur la fréquentation des hébergements touristiques et sur les données climatologiques, nous cherchons à représenter l’impact du réchauffement climatique sur les flux touristiques au niveau départemental. 
+
 Dans ce projet, nous utilisons la température comme indicateur du réchauffement climatique, par souci de concision, même si d'autres variables auraient pu être pertinentes (sécheresse, humidité). Nous distinguons également le tourisme d’été et le tourisme d’hiver entre 2011 et 2019 afin de mieux représenter la répartition des flux touristiques par département en France métropolitaine.
 
 ## Problématique: 
