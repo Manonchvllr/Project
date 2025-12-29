@@ -97,7 +97,7 @@ def Donne(dep, path="base.csv", verbose=True):
         .mean()
         .sort_index()
     )
-
+    data1 = data.copy() # Garder l'enssembles des données pour une comparaison avec la prediction
     # =====================================================
     # 3. Restriction avant la crise sanitaire
     # =====================================================
@@ -107,17 +107,17 @@ def Donne(dep, path="base.csv", verbose=True):
     # 4. Mise à fréquence mensuelle explicite
     # =====================================================
     data = data.asfreq("MS")
-
+    data1 = data1.asfreq("MS")
     # =====================================================
     # 5. Interpolation temporelle
     # =====================================================
     data = data.interpolate(method="time")
-
+    data1 = data1.interpolate(method="time")
     # =====================================================
     # 6. Transformation logarithmique
     # =====================================================
     data["OBS_VALUE_CORR"] = np.log(data["OBS_VALUE_CORR"])
-
+    data1["OBS_VALUE_CORR"] = np.log(data1["OBS_VALUE_CORR"])
     # =====================================================
     # 7. Messages utilisateur
     # =====================================================
@@ -134,7 +134,7 @@ def Donne(dep, path="base.csv", verbose=True):
         print("- Flux touristique transformé en logarithme")
         print("===================================")
 
-    return data, donne_pres
+    return data, donne_pres , data1
 
 ##########################################################################################################
 # Graphique personnaliser pour l'evolution des series 
@@ -394,7 +394,7 @@ def Dickey_fuller(
 ###############################################################################################
 # CALCULE DU POIDS DU CLIMAT DANS LA PREDICTION DU FLUX TOURISTIQUE
 ##############################################################################################
-def modele(Departement):
+def modele(Departement, base):
     """
     OBJECTIF
     --------
@@ -557,6 +557,67 @@ def modele(Departement):
         print(ecm_res.summary())
         print(bounds)
         print("===================================")
+        print("\nPrediction avec le modèle ARDL sur les 36 mois suivants")
+
+        # preparation des données 
+        horizon = 36
+        X_future = base.loc[base.index[-horizon:], ["TM", "NBJTX30", "NBJNEIG"]]
+
+        #Prediction
+        y_pred = res.predict(
+        start=Departement.index[-1],
+        end=base.index[-1],
+        exog_oos=X_future)
+
+        # Intervalle de confiance
+        sigma = res.resid.std()
+        ic_inf = y_pred - 1.96 * sigma
+        ic_sup = y_pred + 1.96 * sigma
+
+
+
+        #Affichage de la prediction
+        fig, ax = plt.subplots(figsize=(12, 10))
+        ax.plot(
+            base.index,
+            base["OBS_VALUE_CORR"],
+            color="black",
+            label="Observé"
+        )
+        
+        ax.plot(
+            y_pred.index,
+            y_pred,
+            color="red",
+            label="Prévision (36 mois)"
+        )
+        
+        ax.fill_between(
+            y_pred.index,
+            ic_inf,
+            ic_sup,
+            color="blue",
+            alpha=0.2,
+            label="IC 95 %"
+        )
+        
+        ax.axvline(
+            Departement.index[-1],
+            linestyle="--",
+            color="gray"
+        )
+        
+        ax.set_title("Prévision du flux touristique (ARDL – exogènes observées)")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Flux touristique (log)")
+        ax.legend()
+        
+        plt.show()
+
+
+
+        
+
     print(commentaire)
     return commentaire, code
 
@@ -664,7 +725,7 @@ def Test(departement):
     # ======================================================================================
     print("\n#1) Préparation des données")
 
-    Departement, donne_pres = Donne(departement)
+    Departement, donne_pres, base = Donne(departement)
 
     # Justification :
     # Toute analyse économétrique repose sur des données complètes.
@@ -709,7 +770,7 @@ def Test(departement):
     print("\n#3) Modélisation économétrique (ARDL / UECM)")
     if condition :
         print("\nLa condition necessaire pour pouvoire faire le modèle ARDL qui est que toutes le variables sont\nintegrées d'ordre inferieur à 1 est satisfait\n")
-        conclusion, code = modele(Departement)
+        conclusion, code = modele(Departement, base)
     else:
         print("\nLa modelisation ARDL n'est pas justifier")
         conclusion, code = "Nous ne pouvons rien conclu avec cette approche de modelisation", "pas_de_modele"
@@ -721,7 +782,7 @@ def Test(departement):
     if code == "bon" :
         print("===================================")
         print("Prediction avec XGBOOST")
-        _ = Prediction(Departement)
+        _ = Prediction(Departement, base = base, )
         print("===================================")
 
         
@@ -777,7 +838,7 @@ def Resultat(nombre):
 #########################################################################################################
 # PREDICTION
 #########################################################################################################
-def Prediction(df, horizon=15):
+def Prediction(df, base, horizon=36):
     """
     Prévision du flux touristique avec XGBoost
     """
@@ -877,12 +938,11 @@ def Prediction(df, horizon=15):
 
     # 9) Graphique
     plt.figure(figsize=(10, 6))
-    plt.plot(df.index, df["OBS_VALUE_CORR"], label="Observé", color="black")
-    plt.plot(future_series.index, future_series, 
-             label="Prévision", color="red", linestyle="--")
+    plt.plot(base.index, base["OBS_VALUE_CORR"], label="Observé", color="black")
+    plt.plot(future_series.index, future_series, label="Prévision", color="red", linestyle="--")
     plt.axvline(df.index[-1], color="gray", linestyle=":")
     plt.legend()
-    plt.title("Prévision du flux touristique")
+    plt.title("Prévision du flux touristique en utilisant XGboost")
     plt.show()
 
     return metrics
